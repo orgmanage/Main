@@ -1,5 +1,6 @@
 package com.orgmanager.mapper;
 
+
 import java.math.BigDecimal;
 import java.util.List;
 
@@ -14,6 +15,8 @@ import com.orgmanager.model.RoleModel;
 import com.orgmanager.model.UserModel;
 import com.orgmanager.model.UserRoleModel;
 
+import static com.orgmanager.util.OrgManagerUtil.isNull;
+
 public class UserMapper {
 
 	public static UserModel translate(UserModel userModel,User user){
@@ -25,21 +28,24 @@ public class UserMapper {
 		userModel.setCity(user.getCity());
 		userModel.setCountry(user.getCountry());
 		userModel.setEmailId(user.getEmailId());
+		if(!isNull(user.getEmergContact()))
 		userModel.setEmergContactNum(user.getEmergContact().longValue());
+		if(!isNull(user.getFaxNumber()))
 		userModel.setFaxNumber(user.getFaxNumber().longValue());
+		if(!isNull(user.getMobileNumber()))
 		userModel.setMobileNumber(user.getMobileNumber().longValue());
+		if(!isNull(user.getPhoneNumber()))
 		userModel.setPhoneNumber(user.getPhoneNumber().longValue());
 		userModel.setState(user.getState());		
 		userModel.setUserId(user.getUserId());
 		userModel.setZipcode(user.getZipcode());
-		
+		if(null!=userModel && null!=userModel.getSuperVisor() && null!=userModel.getSuperVisor().getUserId())
 		translate(userModel.getSuperVisor(),user.getUser());
+		if(null!=userModel && null!=userModel.getCredential() && null!=userModel.getCredential().getCredentialId())
 		translate(userModel,user.getCredential());
+		if(null!=userModel && null!=userModel.getDesignation() && null!=userModel.getDesignation().getDesignationId())
 		translate(userModel,user.getDesignation());
-		
-		
 		return userModel;
-		
 	}
 	
 	public static void translate(UserModel userModel,Credential credential){
@@ -116,6 +122,4 @@ public class UserMapper {
 		credential.setPassword(model.getPassword());
 		return credential;
 	}
-	
-	
 }

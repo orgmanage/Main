@@ -19,8 +19,14 @@ public class UserManagementServiceImpl implements UserManagementService {
 	
 	@Override
 	public List<User> searchUsers(String searchString) {
+		System.out.println("Search Streing "+searchString);
 		List<User> userList=userRepo.searchUser(searchString);
 		return userList;
+	}
+
+	@Override
+	public User getUserDetails(Long userId) {
+		return userRepo.findByUserId(userId);
 	}
 
 }

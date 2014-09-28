@@ -1,6 +1,7 @@
 package com.orgmanager.model;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import org.dozer.Mapping;
@@ -10,6 +11,7 @@ public class UserModel  {
 	private Long userId;	
 	private String firstName;
 	private String lastName;
+	private Date dateOfBirth;
 	private String address1;
 	private String address2;
 	private String city;
@@ -47,6 +49,12 @@ public class UserModel  {
 	}
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
+	}
+	public Date getDateOfBirth() {
+		return dateOfBirth;
+	}
+	public void setDateOfBirth(Date dateOfBirth) {
+		this.dateOfBirth = dateOfBirth;
 	}
 	public String getAddress1() {
 		return address1;
@@ -140,5 +148,17 @@ public class UserModel  {
 		if(null==credential)
 			credential=new CredentialModel();
 		return credential;
+	}
+	public void setSuperVisor(UserModel superVisor) {
+		this.superVisor = superVisor;
+	}
+	public void setCredential(CredentialModel credential) {
+		this.credential = credential;
+	}
+	public void setDesignation(DesignationModel designation) {
+		this.designation = designation;
+	}
+	public void setRoles(List<UserRoleModel> roles) {
+		this.roles = roles;
 	}
 }

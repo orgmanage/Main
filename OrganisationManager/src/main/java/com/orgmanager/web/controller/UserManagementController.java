@@ -1,22 +1,23 @@
 package com.orgmanager.web.controller;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
 import org.apache.log4j.Logger;
-import org.codehaus.jackson.JsonGenerationException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import com.orgmanager.entity.User;
 import com.orgmanager.mapper.UserMapper;
 import com.orgmanager.model.UserModel;
@@ -39,7 +40,7 @@ public class UserManagementController {
 	}
 	
 	@RequestMapping(value = "/search_user.htm", method = RequestMethod.POST)
-	public String searchUsers(ModelMap model, @RequestParam("searchString") String searchString,
+	public @ResponseBody String searchUsers(ModelMap model, @RequestParam("searchString") String searchString,
 			HttpServletRequest request) {
 		final String METHOD_NAME = "searchUsers";
 		log.info("Method entry " + METHOD_NAME);
@@ -49,28 +50,43 @@ public class UserManagementController {
 		for (User user : userList) {
 			users.add(UserMapper.translate(new UserModel(), user));
 		}
-		System.out.println(convertObjectToJson(users));
-			
+		String jsonObject=convertObjectToJson(users);
+		System.out.println(jsonObject);
 		log.info("Method exit " + METHOD_NAME);
-		return "search";
+		return jsonObject;
 
 	}
 	
+	@RequestMapping(value = "/user_details.htm", method = RequestMethod.GET)
+	public String getUserDetails(ModelMap model, @RequestParam("userId") Long userId,
+			HttpServletRequest request) {
+		final String METHOD_NAME = "getUserDetails";
+		log.info("Method entry " + METHOD_NAME);
+		User user=userService.getUserDetails(userId);
+		UserModel userModel=UserMapper.translate(new UserModel(), user);
+		model.addAttribute("userModel",userModel);
+		log.info("Method exit " + METHOD_NAME);
+		return "userDetails";
+	}
+	
 	private String convertObjectToJson(List<UserModel> users ) {
-		ObjectMapper jsonMapper = new ObjectMapper();
-		try {
-			return jsonMapper.writeValueAsString(users);
-		} catch (JsonGenerationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (JsonMappingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		JsonArray array= new JsonArray();
+		for (UserModel userModel : users) {
+			if(null!=userModel && null!=userModel.getUserId()){
+				array.add(convertUserToJson(userModel));
+			}
 		}
-		 return null;
+		Gson gson=new GsonBuilder().setPrettyPrinting().serializeNulls().create();
+		String jsonString=gson.toJson(array);
+		return jsonString;
+	}
+	
+	private JsonObject convertUserToJson(UserModel userModel){
+		JsonObject obj = new JsonObject();
+		obj.addProperty("label", userModel.getFirstName()+" "+userModel.getLastName());
+		obj.addProperty("category", "Users");
+		obj.addProperty("value", userModel.getUserId());
+		return obj;
 	}
 
 }

@@ -35,7 +35,6 @@ public class User implements Serializable {
 	@Column(name="COUNTRY")
 	private String country;
 
-	@Temporal(TemporalType.DATE)
 	@Column(name="DATE_OF_BIRTH")
 	private Date dateOfBirth;
 
