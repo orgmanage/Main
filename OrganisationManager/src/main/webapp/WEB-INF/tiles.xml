@@ -34,7 +34,10 @@
         <put-attribute name="body" value="/WEB-INF/jsp/search.jsp" />
     </definition>
     
-    <definition name="userDetails" template="/WEB-INF/jsp/user_details.jsp"/>
+    <definition name="userDetails" extends="base.definition">
+    <put-attribute name="title" value="User Details Page" />
+        <put-attribute name="body" value="/WEB-INF/jsp/user_details.jsp" />
+    </definition>
     
  
 </tiles-definitions>

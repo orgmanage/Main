@@ -24,11 +24,9 @@ public class UserModel  {
 	private Long faxNumber;
 	private String bloodGroup;
 	private String emailId;
-	@Mapping("user")
 	private UserModel superVisor;	
 	private CredentialModel credential;
 	private DesignationModel designation;	
-	@Mapping("userRoleMappings")
 	private List<UserRoleModel> roles;
 		
 	

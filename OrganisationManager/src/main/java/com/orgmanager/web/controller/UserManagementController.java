@@ -9,6 +9,7 @@ import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -27,6 +28,7 @@ import com.orgmanager.service.UserManagementService;
 public class UserManagementController {
 	
 	@Autowired UserManagementService userService;
+	@Autowired UserMapper userMapper;
 	
 	private static final Logger log = Logger.getLogger(UserManagementController.class);
 
@@ -48,7 +50,7 @@ public class UserManagementController {
 		List<UserModel> users= new ArrayList<UserModel>();
 		List<User> userList=userService.searchUsers(searchString);
 		for (User user : userList) {
-			users.add(UserMapper.translate(new UserModel(), user));
+			users.add(userMapper.translate(new UserModel(), user));
 		}
 		String jsonObject=convertObjectToJson(users);
 		System.out.println(jsonObject);
@@ -63,7 +65,19 @@ public class UserManagementController {
 		final String METHOD_NAME = "getUserDetails";
 		log.info("Method entry " + METHOD_NAME);
 		User user=userService.getUserDetails(userId);
-		UserModel userModel=UserMapper.translate(new UserModel(), user);
+		UserModel userModel=userMapper.translate(new UserModel(), user);
+		model.addAttribute("userModel",userModel);
+		log.info("Method exit " + METHOD_NAME);
+		return "userDetails";
+	}
+	
+	@RequestMapping(value = "/create_user.htm", method = RequestMethod.POST)
+	public String createUserDetails(@ModelAttribute UserModel userModel, ModelMap model) {
+		final String METHOD_NAME = "getUserDetails";
+		log.info("Method entry " + METHOD_NAME);
+		User user = userMapper.translate(userModel);
+		User userDetails = userService.createUserDetail(user);
+		userMapper.translate(userModel, userDetails);
 		model.addAttribute("userModel",userModel);
 		log.info("Method exit " + METHOD_NAME);
 		return "userDetails";

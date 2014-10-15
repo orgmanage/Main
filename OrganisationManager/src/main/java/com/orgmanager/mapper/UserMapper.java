@@ -1,8 +1,13 @@
 package com.orgmanager.mapper;
 
+import static com.orgmanager.util.OrgManagerUtil.isNull;
 
 import java.math.BigDecimal;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import com.orgmanager.entity.Credential;
 import com.orgmanager.entity.Designation;
@@ -14,12 +19,14 @@ import com.orgmanager.model.DesignationModel;
 import com.orgmanager.model.RoleModel;
 import com.orgmanager.model.UserModel;
 import com.orgmanager.model.UserRoleModel;
+import com.orgmanager.repo.DesignationRepo;
 
-import static com.orgmanager.util.OrgManagerUtil.isNull;
-
+@Component
 public class UserMapper {
+	@Autowired DesignationRepo designationRepo;
+	private static final Logger log = Logger.getLogger(UserMapper.class);
 
-	public static UserModel translate(UserModel userModel,User user){
+	public UserModel translate(UserModel userModel, User user){
 		userModel.setFirstName(user.getFirstName());
 		userModel.setLastName(user.getLastName());
 		userModel.setAddress1(user.getAddress1());
@@ -28,50 +35,48 @@ public class UserMapper {
 		userModel.setCity(user.getCity());
 		userModel.setCountry(user.getCountry());
 		userModel.setEmailId(user.getEmailId());
-		if(!isNull(user.getEmergContact()))
-		userModel.setEmergContactNum(user.getEmergContact().longValue());
-		if(!isNull(user.getFaxNumber()))
-		userModel.setFaxNumber(user.getFaxNumber().longValue());
-		if(!isNull(user.getMobileNumber()))
-		userModel.setMobileNumber(user.getMobileNumber().longValue());
-		if(!isNull(user.getPhoneNumber()))
-		userModel.setPhoneNumber(user.getPhoneNumber().longValue());
-		userModel.setState(user.getState());		
+		if (!isNull(user.getEmergContact()))
+			userModel.setEmergContactNum(user.getEmergContact().longValue());
+		if (!isNull(user.getFaxNumber()))
+			userModel.setFaxNumber(user.getFaxNumber().longValue());
+		if (!isNull(user.getMobileNumber()))
+			userModel.setMobileNumber(user.getMobileNumber().longValue());
+		if (!isNull(user.getPhoneNumber()))
+			userModel.setPhoneNumber(user.getPhoneNumber().longValue());
+		userModel.setState(user.getState());
 		userModel.setUserId(user.getUserId());
 		userModel.setZipcode(user.getZipcode());
-		if(null!=userModel && null!=userModel.getSuperVisor() && null!=userModel.getSuperVisor().getUserId())
-		translate(userModel.getSuperVisor(),user.getUser());
-		if(null!=userModel && null!=userModel.getCredential() && null!=userModel.getCredential().getCredentialId())
-		translate(userModel,user.getCredential());
-		if(null!=userModel && null!=userModel.getDesignation() && null!=userModel.getDesignation().getDesignationId())
-		translate(userModel,user.getDesignation());
+		if (null != userModel && null != userModel.getSuperVisor() && null != userModel.getSuperVisor().getUserId())
+			translate(userModel.getSuperVisor(), user.getUser());
+		if (null != userModel && null != userModel.getCredential() && null != userModel.getCredential().getCredentialId())
+			translate(userModel, user.getCredential());
+		if (null != userModel && null != userModel.getDesignation() && null != userModel.getDesignation().getDesignationId())
+			translate(userModel, user.getDesignation());
 		return userModel;
 	}
-	
-	public static void translate(UserModel userModel,Credential credential){
-		CredentialModel model=userModel.getCredential();
+
+	public static void translate(UserModel userModel, Credential credential){
+		CredentialModel model = userModel.getCredential();
 		model.setCredentialId(credential.getCredentialId());
 		model.setUserName(credential.getUserName());
 		model.setPassword(credential.getPassword());
 	}
-	
-	
-	
-	public static void translate(UserModel userModel,Designation designation){
-		DesignationModel model=userModel.getDesignation();
+
+	public static void translate(UserModel userModel, Designation designation){
+		DesignationModel model = userModel.getDesignation();
 		model.setDesignationId(designation.getDesignationId());
 		model.setDesignationName(designation.getDesignationName());
-		model.setDesignationDesc(designation.getDesignationDesc());		
+		model.setDesignationDesc(designation.getDesignationDesc());
 	}
-	
-	public static void translate(UserModel userModel,List<UserRoleMapping> roles){
-		for (UserRoleMapping roleMapping: roles) {
+
+	public static void translate(UserModel userModel, List<UserRoleMapping> roles){
+		for (UserRoleMapping roleMapping : roles) {
 			userModel.getRoles().add(translate(roleMapping.getRole()));
 		}
 	}
-	
+
 	public static UserRoleModel translate(Role role){
-		UserRoleModel userRoleModel= new UserRoleModel();
+		UserRoleModel userRoleModel = new UserRoleModel();
 		RoleModel model = new RoleModel();
 		model.setRoleId(role.getRoleId());
 		model.setRoleName(role.getRoleName());
@@ -79,8 +84,8 @@ public class UserMapper {
 		userRoleModel.setRole(model);
 		return userRoleModel;
 	}
-	
-	public static User translate(UserModel userModel){
+
+	public User translate(UserModel userModel){
 		User user = new User();
 		user.setFirstName(userModel.getFirstName());
 		user.setLastName(userModel.getLastName());
@@ -95,18 +100,21 @@ public class UserMapper {
 		user.setMobileNumber(BigDecimal.valueOf(userModel.getMobileNumber()));
 		user.setPhoneNumber(BigDecimal.valueOf(userModel.getPhoneNumber()));
 		user.setState(userModel.getState());
+		user.setDateOfBirth(userModel.getDateOfBirth());
 		user.setUserId(userModel.getUserId());
 		user.setZipcode(userModel.getZipcode());
-		
-		user.setUser(translate(userModel.getSuperVisor()));
+		if (userModel.getSuperVisor().getUserId() != null)
+			user.setUser(translate(userModel.getSuperVisor()));
 		user.setCredential(translate(userModel.getCredential()));
-		user.setDesignation(translate(userModel.getDesignation()));
+		Long designationId = userModel.getDesignation().getDesignationId();
 		
+		Designation designation = designationRepo.findOne(designationId);
+		user.setDesignation(designation);
+		log.info("user :" + user);
 		return user;
-		
+
 	}
-	
-	
+
 	public static Designation translate(DesignationModel model){
 		Designation designation = new Designation();
 		designation.setDesignationId(model.getDesignationId());
@@ -114,10 +122,10 @@ public class UserMapper {
 		designation.setDesignationDesc(model.getDesignationDesc());
 		return designation;
 	}
-	
+
 	public static Credential translate(CredentialModel model){
 		Credential credential = new Credential();
-		credential.setCredentialId(model.getCredentialId());
+		// credential.setCredentialId(model.getCredentialId());
 		credential.setUserName(model.getUserName());
 		credential.setPassword(model.getPassword());
 		return credential;
