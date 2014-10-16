@@ -1,21 +1,28 @@
 package com.orgmanager.service.impls;
 
+import java.io.IOException;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.google.zxing.WriterException;
 import com.orgmanager.entity.User;
+import com.orgmanager.entity.UserCodeMapping;
+import com.orgmanager.mapper.UserCodeMapper;
 import com.orgmanager.mapper.UserMapper;
+import com.orgmanager.repo.UserCodeMappingRepo;
 import com.orgmanager.repo.UserRepo;
 import com.orgmanager.service.UserManagementService;
+import com.orgmanager.util.QRCodeGenerator;
 
 @Service
 @Transactional
 public class UserManagementServiceImpl implements UserManagementService {
 
 	@Autowired UserRepo userRepo;
+	@Autowired UserCodeMappingRepo userCodeMappingRepo;
 
 	@Override
 	public List<User> searchUsers(String searchString){
@@ -31,7 +38,18 @@ public class UserManagementServiceImpl implements UserManagementService {
 
 	@Override
 	public User createUserDetail(User user){
-		user = userRepo.save(user);
+		try {
+			user = userRepo.save(user);
+			byte[] userQrCode = QRCodeGenerator.generateQrCode(user.getUserId()+"_"+user.getFirstName()+"_"+user.getLastName());
+			UserCodeMapping userCodeMapper = UserCodeMapper.translate(user.getUserId(), userQrCode);
+			userCodeMappingRepo.save(userCodeMapper);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (WriterException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		User createdUser = userRepo.findOne(user.getUserId());
 		return createdUser;
 	}

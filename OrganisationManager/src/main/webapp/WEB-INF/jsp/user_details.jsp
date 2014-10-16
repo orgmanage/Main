@@ -95,6 +95,10 @@ $(document).ready(function(){
 </table>
 </td>
 </tr>
+<tr>
+<td>QR Code</td>
+<td><img src="${contextPath}/user_details.htm/userId=${userModel.userId}"></td>
+</tr>
 </table>
 
 

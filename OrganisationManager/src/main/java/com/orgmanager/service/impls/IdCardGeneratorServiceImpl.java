@@ -19,6 +19,7 @@ public class IdCardGeneratorServiceImpl implements IdCardGeneratorService {
 	@Override
 	public void generateUserIdCard(Long userId){
 		User user = userRepo.findOne(userId);
+		System.out.println(user);
 		
 	}
 
