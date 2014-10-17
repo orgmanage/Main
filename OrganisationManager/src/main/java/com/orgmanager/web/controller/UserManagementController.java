@@ -1,6 +1,10 @@
 package com.orgmanager.web.controller;
 
-import java.io.OutputStream;
+import static com.orgmanager.util.CommonConstants.ADD_USER_VIEW;
+import static com.orgmanager.util.CommonConstants.DESIGNATIONS;
+import static com.orgmanager.util.CommonConstants.ROLES;
+import static com.orgmanager.util.CommonConstants.USER_MODEL;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,23 +20,29 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.ModelAndView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.orgmanager.entity.User;
-import com.orgmanager.mapper.UserCodeMapper;
+import com.orgmanager.mapper.UserImageMappingMapper;
 import com.orgmanager.mapper.UserMapper;
 import com.orgmanager.model.UserModel;
+import com.orgmanager.repo.DesignationRepo;
+import com.orgmanager.repo.RolesRepo;
 import com.orgmanager.service.UserManagementService;
+import com.orgmanager.util.CommonConstants;
 
 @Controller
 public class UserManagementController {
 
 	@Autowired UserManagementService userService;
 	@Autowired UserMapper userMapper;
-	@Autowired UserCodeMapper userCodeMapper;
+	@Autowired UserImageMappingMapper userImageMappingMapper;
+	@Autowired DesignationRepo designationRepo;
+	@Autowired RolesRepo rolesRepo;
 
 	private static final Logger log = Logger.getLogger(UserManagementController.class);
 
@@ -62,26 +72,26 @@ public class UserManagementController {
 		return jsonObject;
 
 	}
+	
+	@RequestMapping(value = CommonConstants.ADD_USER_REQUEST, method = RequestMethod.GET)
+	public ModelAndView addUser(ModelMap model, HttpServletRequest request){
+		final String METHOD_NAME = "addUser";
+		log.info("Method entry " + METHOD_NAME);
+		UserModel userModel = new UserModel();
+		model.addAttribute(USER_MODEL, userModel);
+		model.addAttribute(ROLES, rolesRepo.findAll());
+		model.addAttribute(DESIGNATIONS, designationRepo.findAll());
+		log.info("Method exit " + METHOD_NAME);
+		return new ModelAndView(ADD_USER_VIEW, model);
+
+	}
 
 	@RequestMapping(value = "/user_details.htm", method = RequestMethod.GET)
 	public String getUserDetails(ModelMap model, @RequestParam("userId") Long userId, HttpServletRequest request,
 			HttpServletResponse response){
 		final String METHOD_NAME = "getUserDetails";
 		log.info("Method entry " + METHOD_NAME);
-		User user = userService.getUserDetails(userId);
-		UserModel userModel = userMapper.translate(new UserModel(), user);
-		userCodeMapper.translate(userModel);
-		try {
-			response.setContentType("image/png");
-			OutputStream o = response.getOutputStream();
-			o.write(userModel.getUserCode().getUserCode());
-			o.flush();
-			o.close();
-
-		} catch (Exception ex) {
-
-		}
-		log.info("userModel :" + userModel.getUserCode().getByteArrayString());
+		UserModel userModel  = userService.getUserDetails(userId);
 		model.addAttribute("userModel", userModel);
 		log.info("Method exit " + METHOD_NAME);
 		return "userDetails";
@@ -91,11 +101,9 @@ public class UserManagementController {
 	public String createUserDetails(@ModelAttribute UserModel userModel, ModelMap model){
 		final String METHOD_NAME = "getUserDetails";
 		log.info("Method entry " + METHOD_NAME);
-		User user = userMapper.translate(userModel);
-		User userDetails = userService.createUserDetail(user);
-		userMapper.translate(userModel, userDetails);
-		userCodeMapper.translate(userModel);
-		log.info("userModel :" + userModel.getUserCode().getByteArrayString());
+		userModel = userService.createUserDetail(userModel);
+		userService.createUserImage(userModel);
+		userModel = userService.getUserDetails(userModel.getUserId());
 		model.addAttribute("userModel", userModel);
 		log.info("Method exit " + METHOD_NAME);
 		return "userDetails";

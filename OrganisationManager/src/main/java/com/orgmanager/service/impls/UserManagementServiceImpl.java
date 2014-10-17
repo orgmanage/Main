@@ -9,10 +9,11 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.google.zxing.WriterException;
 import com.orgmanager.entity.User;
-import com.orgmanager.entity.UserCodeMapping;
-import com.orgmanager.mapper.UserCodeMapper;
+import com.orgmanager.entity.UserImageMapping;
+import com.orgmanager.mapper.UserImageMappingMapper;
 import com.orgmanager.mapper.UserMapper;
-import com.orgmanager.repo.UserCodeMappingRepo;
+import com.orgmanager.model.UserModel;
+import com.orgmanager.repo.UserImageMappingRepo;
 import com.orgmanager.repo.UserRepo;
 import com.orgmanager.service.UserManagementService;
 import com.orgmanager.util.QRCodeGenerator;
@@ -22,7 +23,9 @@ import com.orgmanager.util.QRCodeGenerator;
 public class UserManagementServiceImpl implements UserManagementService {
 
 	@Autowired UserRepo userRepo;
-	@Autowired UserCodeMappingRepo userCodeMappingRepo;
+	@Autowired UserImageMappingRepo userCodeMappingRepo;
+	@Autowired UserMapper userMapper;
+	@Autowired UserImageMappingMapper userImageMappingMapper;
 
 	@Override
 	public List<User> searchUsers(String searchString){
@@ -32,17 +35,26 @@ public class UserManagementServiceImpl implements UserManagementService {
 	}
 
 	@Override
-	public User getUserDetails(Long userId){
-		return userRepo.findByUserId(userId);
+	public UserModel getUserDetails(Long userId){
+		User user = userRepo.findByUserId(userId);
+		UserModel userModel = userMapper.translate(new UserModel(), user);
+		userImageMappingMapper.translate(userModel);
+		return userModel;
 	}
 
 	@Override
-	public User createUserDetail(User user){
+	public UserModel createUserDetail(UserModel userModel){
+		User user = userMapper.translate(userModel);
+		user = userRepo.save(user);
+		userModel.setUserId(user.getUserId());
+		return userModel;
+	}
+	
+	public void createUserImage(UserModel userModel){
 		try {
-			user = userRepo.save(user);
-			byte[] userQrCode = QRCodeGenerator.generateQrCode(user.getUserId()+"_"+user.getFirstName()+"_"+user.getLastName());
-			UserCodeMapping userCodeMapper = UserCodeMapper.translate(user.getUserId(), userQrCode);
-			userCodeMappingRepo.save(userCodeMapper);
+			byte[] userQrCode = QRCodeGenerator.generateQrCode(userModel.getUserId()+"_"+userModel.getFirstName()+"_"+userModel.getLastName());
+			UserImageMapping userImageMapping = UserImageMappingMapper.translate(userModel, userQrCode);
+			userCodeMappingRepo.save(userImageMapping);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -50,15 +62,13 @@ public class UserManagementServiceImpl implements UserManagementService {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		User createdUser = userRepo.findOne(user.getUserId());
-		return createdUser;
 	}
 
 	@Override
-	public User editUserDetail(User user){
-		
+	public UserModel editUserDetail(UserModel userModel){
+		User user = userMapper.translate(userModel);
 		user = userRepo.save(user);
-		return user;
+		return userModel;
 	}
 
 	@Override

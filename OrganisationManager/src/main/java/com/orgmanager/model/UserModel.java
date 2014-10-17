@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import org.springframework.web.multipart.MultipartFile;
+
 public class UserModel {
 
 	private Long userId;
@@ -25,8 +27,10 @@ public class UserModel {
 	private UserModel superVisor;
 	private CredentialModel credential;
 	private DesignationModel designation;
+	private List<Long> userRoles;
 	private List<UserRoleModel> roles;
-	private UserCodeModel userCode;
+	private UserImageMappingModel userImageMapping;
+	private MultipartFile userImage;
 
 	public Long getUserId(){
 		return userId;
@@ -196,11 +200,27 @@ public class UserModel {
 		this.roles = roles;
 	}
 
-	public UserCodeModel getUserCode(){
-		return userCode;
+	public List<Long> getUserRoles(){
+		return userRoles;
 	}
 
-	public void setUserCode(UserCodeModel userCode){
-		this.userCode = userCode;
+	public void setUserRoles(List<Long> userRoles){
+		this.userRoles = userRoles;
+	}
+
+	public MultipartFile getUserImage(){
+		return userImage;
+	}
+
+	public void setUserImage(MultipartFile userImage){
+		this.userImage = userImage;
+	}
+
+	public UserImageMappingModel getUserImageMapping(){
+		return userImageMapping;
+	}
+
+	public void setUserImageMapping(UserImageMappingModel userImageMapping){
+		this.userImageMapping = userImageMapping;
 	}
 }

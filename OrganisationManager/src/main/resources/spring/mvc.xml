@@ -23,14 +23,13 @@ http://www.springframework.org/schema/tx http://www.springframework.org/schema/t
 		up static resources in the ${webappRoot}/resources/ directory -->
 	<mvc:resources mapping="/resources/**" location="/resources/" />
 
-<!-- 
-	<mvc:interceptors>
-		<mvc:interceptor>
-			<mvc:mapping path="/*.htm" />
-			<bean class="com.megapath.sats.web.interceptors.SatsInterceptor" />
-		</mvc:interceptor>
-	</mvc:interceptors>
- -->
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+	
+		<!-- setting maximum upload size -->
+		<property name="maxUploadSize" value="100000" />
+	
+	</bean>
 
 	<bean id="messageSource"
 		class="org.springframework.context.support.ResourceBundleMessageSource">

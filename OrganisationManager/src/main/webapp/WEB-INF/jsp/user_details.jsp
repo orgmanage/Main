@@ -96,11 +96,13 @@ $(document).ready(function(){
 </td>
 </tr>
 <tr>
-<td>QR Code</td>
-<td><img src="${contextPath}/user_details.htm/userId=${userModel.userId}"></td>
+<td>userCode</td>
+<td><img src="data:image/png;base64,${userModel.userImageMapping.encodedUserCode}" alt="..." width="50" height="50"></td>
+</tr>
+<tr>
+<td>userImage</td>
+<td><img src="data:image/png;base64,${userModel.userImageMapping.encodedUserPortrait}" alt="..." width="50" height="50"></td>
 </tr>
 </table>
-
-
 </body>
 </html>

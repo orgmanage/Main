@@ -16,6 +16,5 @@
 	<context:property-placeholder location="classpath:properties/orgmanager.properties" ignore-resource-not-found="false"/>
 	
     <context:annotation-config />
-    
   
 </beans>
